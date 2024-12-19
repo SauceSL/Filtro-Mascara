@@ -11,9 +11,19 @@ mascaras = [
 ]
 
 # Ajustes de escala y desplazamiento para cada máscara
-escalas = [0.1, 0.1, 0.6, 0.75, 0.5]  # Escala para cada máscara (1.0 = tamaño original del rostro)
-desplazamientos_x = [20, 40, 35, 25, 50]  # Desplazamiento en X para cada máscara
-desplazamientos_y = [40, 40, 25, -100, 130]  # Desplazamiento en Y para cada máscara
+escalas = [0.1, 0.1, 0.6, 0.75, 0.5]
+desplazamientos_x = [20, 40, 35, 25, 50]
+desplazamientos_y = [40, 40, 25, -100, 130]
+
+# Preguntar al usuario qué máscara desea usar
+print("Seleccione una máscara para aplicar:")
+print("0: LOBO\n1: ROSA\n2: GAFAS\n3: SOMBRERO\n4: BIGOTE")
+seleccion = int(input("Ingrese el número de la máscara: "))
+
+# Validar la selección del usuario
+if seleccion < 0 or seleccion >= len(mascaras):
+    print("Selección inválida. Usando la máscara por defecto (LOBO).")
+    seleccion = 0
 
 # Cargar el clasificador de rostros
 face_cascade = cv2.CascadeClassifier('C:\\Users\\Sauce\\Desktop\\graficacion\\phyton\\haarcascade_frontalface_alt2.xml')
@@ -35,49 +45,49 @@ while True:
 
     # Procesar cada rostro detectado
     for (x, y, w, h) in rostros:
-        for idx, mascara in enumerate(mascaras):
-            # Obtener escala y desplazamiento específicos de cada máscara
-            escala = escalas[idx]
-            dx = desplazamientos_x[idx]
-            dy = desplazamientos_y[idx]
+        # Obtener la máscara, escala y desplazamiento según la selección
+        mascara = mascaras[seleccion]
+        escala = escalas[seleccion]
+        dx = desplazamientos_x[seleccion]
+        dy = desplazamientos_y[seleccion]
 
-            # Redimensionar la máscara según la escala
-            ancho_mascara = int(w * escala)
-            alto_mascara = int(h * escala)
-            mascara_redimensionada = cv2.resize(mascara, (ancho_mascara, alto_mascara))
+        # Redimensionar la máscara según la escala
+        ancho_mascara = int(w * escala)
+        alto_mascara = int(h * escala)
+        mascara_redimensionada = cv2.resize(mascara, (ancho_mascara, alto_mascara))
 
-            # Separar los canales de la máscara: color y alfa
-            mascara_rgb = mascara_redimensionada[:, :, :3]
-            mascara_alpha = mascara_redimensionada[:, :, 3]
+        # Separar los canales de la máscara: color y alfa
+        mascara_rgb = mascara_redimensionada[:, :, :3]
+        mascara_alpha = mascara_redimensionada[:, :, 3]
 
-            # Calcular la nueva posición con los desplazamientos
-            x_mascara = x + dx
-            y_mascara = y + dy
+        # Calcular la nueva posición con los desplazamientos
+        x_mascara = x + dx
+        y_mascara = y + dy
 
-            # Asegurar que la máscara no se salga de los bordes del frame
-            x_mascara = max(0, min(x_mascara, frame.shape[1] - ancho_mascara))
-            y_mascara = max(0, min(y_mascara, frame.shape[0] - alto_mascara))
+        # Asegurar que la máscara no se salga de los bordes del frame
+        x_mascara = max(0, min(x_mascara, frame.shape[1] - ancho_mascara))
+        y_mascara = max(0, min(y_mascara, frame.shape[0] - alto_mascara))
 
-            # Crear un ROI para la máscara en la nueva posición
-            roi_mascara = frame[y_mascara:y_mascara + alto_mascara, x_mascara:x_mascara + ancho_mascara]
+        # Crear un ROI para la máscara en la nueva posición
+        roi_mascara = frame[y_mascara:y_mascara + alto_mascara, x_mascara:x_mascara + ancho_mascara]
 
-            # Invertir la máscara alfa
-            mascara_alpha_inv = cv2.bitwise_not(mascara_alpha)
+        # Invertir la máscara alfa
+        mascara_alpha_inv = cv2.bitwise_not(mascara_alpha)
 
-            # Enmascarar la región del ROI
-            fondo = cv2.bitwise_and(roi_mascara, roi_mascara, mask=mascara_alpha_inv)
+        # Enmascarar la región del ROI
+        fondo = cv2.bitwise_and(roi_mascara, roi_mascara, mask=mascara_alpha_inv)
 
-            # Enmascarar la máscara RGB
-            mascara_fg = cv2.bitwise_and(mascara_rgb, mascara_rgb, mask=mascara_alpha)
+        # Enmascarar la máscara RGB
+        mascara_fg = cv2.bitwise_and(mascara_rgb, mascara_rgb, mask=mascara_alpha)
 
-            # Combinar fondo y máscara
-            resultado = cv2.add(fondo, mascara_fg)
+        # Combinar fondo y máscara
+        resultado = cv2.add(fondo, mascara_fg)
 
-            # Colocar el resultado en el frame
-            frame[y_mascara:y_mascara + alto_mascara, x_mascara:x_mascara + ancho_mascara] = resultado
+        # Colocar el resultado en el frame
+        frame[y_mascara:y_mascara + alto_mascara, x_mascara:x_mascara + ancho_mascara] = resultado
 
-    # Mostrar el frame con las máscaras aplicadas
-    cv2.imshow('Video con Mascaras en un Rostro', frame)
+    # Mostrar el frame con la máscara aplicada
+    cv2.imshow('Video con Mascara', frame)
 
     # Presionar 'q' para salir del loop
     if cv2.waitKey(1) & 0xFF == ord('q'):

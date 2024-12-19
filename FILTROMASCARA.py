@@ -10,6 +10,10 @@ face_cascade = cv2.CascadeClassifier('C:\\Users\\Sauce\\Desktop\\graficacion\\ph
 # Capturar video desde la cámara (o puedes usar un archivo de video)
 video = cv2.VideoCapture(0)  # Cambia el 0 por la ruta de un archivo de video si quieres usar un archivo
 
+#trasladar
+desplazamiento_x = 0
+desplazamiento_y = 10
+ 
 while True:
     # Leer cada frame del video
     ret, frame = video.read()
